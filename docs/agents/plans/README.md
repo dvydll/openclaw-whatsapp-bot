@@ -27,7 +27,7 @@ Usar [[PLAN-TEMPLATE.md]] como base para nuevos planes.
 
 | ID  | Título | Fecha | Estado | Ref. Issue |
 | --- | ------ | ----- | ------ | ---------- |
-|     |        |       |        |            |
+| [PLAN-001](PLAN-001-bot-whatsapp-openclaw.md) | Bot de WhatsApp con OpenClaw (docker) | 2026-10-15 | Borrador (pendiente GATE 2) | ISSUE-001 |
 
 ---
 
