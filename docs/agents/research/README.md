@@ -24,7 +24,8 @@ RESEARCH-NNN-descripcion-corta.md
 
 | ID  | Título | Fecha | Estado | Ref. Issue |
 | --- | ------ | ----- | ------ | ---------- |
-|     |        |       |        |            |
+| RESEARCH-001 | OpenClaw para bot de WhatsApp | 2026-10-15 | Completada | ISSUE-001 |
+| RESEARCH-002 | Mecanismos de extensión de OpenClaw | 2026-10-15 | Completada | ISSUE-001 |
 
 ---
 
