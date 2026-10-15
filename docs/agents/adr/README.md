@@ -7,7 +7,7 @@ FSFA-UGT.
 
 | #   | Título | Estado | Fecha |
 | --- | ------ | ------ | ----- |
-|     |        |        |       |
+| 001 | [[ADR-001-mecanismos-capacidades-no-nativas.md\|Mecanismos para capacidades no nativas de OpenClaw (kick, roles admin, stickers, multimedia)]] | Propuesto | 2026-10-15 |
 
 ## Plantilla
 
