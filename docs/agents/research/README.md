@@ -26,7 +26,9 @@ RESEARCH-NNN-descripcion-corta.md
 | --- | ------ | ----- | ------ | ---------- |
 | RESEARCH-001 | OpenClaw para bot de WhatsApp | 2026-10-15 | Completada | ISSUE-001 |
 | RESEARCH-002 | Mecanismos de extensión de OpenClaw | 2026-10-15 | Completada | ISSUE-001 |
+| RESEARCH-003 | Proveedor LLM gratuito para el bot | 2026-10-16 | Completada | ISSUE-001 |
+| RESEARCH-004 | Ollama Cloud como proveedor LLM | 2026-10-16 | Completada | ISSUE-001 |
 
 ---
 
-*Última actualización: 2026-10-15*
+*Última actualización: 2026-10-16*
