@@ -13,18 +13,19 @@ metadata:
     - "docker-compose.yml"
     - ".env.example"
     - ".gitignore"
-    - "config/openclaw.json"
+    - "conf/openclaw.json"
     - "skills/group-admin/SKILL.md"
-    - "skills/group-admin/scripts/group-kick.sh"
+    - "skills/group-admin/bin/group-kick.sh"
     - "skills/sticker/SKILL.md"
-    - "skills/sticker/scripts/make-sticker.sh"
+    - "skills/sticker/bin/make-sticker.sh"
     - "skills/ytdl/SKILL.md"
-    - "skills/ytdl/scripts/ytdl.sh"
+    - "skills/ytdl/bin/ytdl.sh"
     - "README.md"
   previousAttempts: []
 ---
 
-**Estado del plan**: **Borrador (pendiente GATE 2)**
+**Estado del plan**: **Aprobado (GATE 2, 2026-10-15)**
+**Desviaciones de ejecución**: 2026-10-16 — directorio de ejecutables de las skills renombrado `scripts/` → `bin/` (preferencia del propietario; sin impacto: OpenClaw no impone el nombre del subdirectorio) — resto de desviaciones (T-05b/T-05c, D4) a registrar en GATE 3. 2026-10-18 — por decisión del propietario se ejecutan **T-08/T-09/T-11/T-13 antes de T-07** (key Ollama Cloud, QR de wacli y batería de pruebas E2E quedan pospuestos para el final): el kick queda inertado por diseño (fail-closed: exit 21 sin roles confirmados / `BOT_JID` ausente), sin efecto hasta la verificación empírica.
 **Ref. Issue**: `ISSUE-001` · **ADR base**: `ADR-001` (aceptado, GATE 1b) · **Investigación**: `RESEARCH-001`, `RESEARCH-002`
 
 ## Contexto
@@ -92,7 +93,7 @@ investigación" — condicionantes que el diseño debe respetar.*
 ### Decisiones de diseño (fijadas por el arquitecto — no se modifican)
 
 **D1 — Kick fail-closed con verificación en script, no solo en el prompt.**
-`skills/group-admin/scripts/group-kick.sh` recibe **JID de grupo, JID del
+`skills/group-admin/bin/group-kick.sh` recibe **JID de grupo, JID del
 emisor y JID del objetivo**. Antes de expulsar:
 
 1. Consulta `wacli groups participants list --jid <grupo> --json` (o
@@ -154,7 +155,7 @@ el mecanismo de media de OpenClaw, con **fallback** `wacli send file --to
 **D5 — Montajes (docker-compose).**
 - `./skills` → `/home/node/.openclaw/skills` (rw desde repo; modo
   configurable `${SKILLS_MOUNT_MODE:-rw}` para pasar a `ro` en producción).
-- `./config/openclaw.json` → `/home/node/.openclaw/openclaw.json` **`:ro`**
+- `./conf/openclaw.json` → `/home/node/.openclaw/openclaw.json` **`:ro`**
   (`OPENCLAW_CONFIG_PATH`), montado *encima* del volumen de estado (orden de
   mounts anidados verificado en T-06).
 - Volumen nombrado `openclaw-state` → `/home/node/.openclaw` (estado,
@@ -209,7 +210,7 @@ Variables con comentarios: `OWNER_PHONE` (E.164), `LLM_PROVIDER`, `LLM_MODEL`
 `.wacli/`), artefactos de descarga (`downloads/`, `*.mp4`, `*.mp3`, `*.webp`,
 `*.webm`), `*.log`, temporales.
 
-### Cambio 5: `config/openclaw.json` (nuevo)
+### Cambio 5: `conf/openclaw.json` (nuevo)
 
 Ver **D4**. Montado `ro` en el contenedor; JSON válido sin secretos
 literales; identidad del agente y política de tools declarando los bins de
@@ -217,7 +218,7 @@ las skills.
 
 ### Cambio 6: `skills/group-admin/` (nuevo)
 
-- `scripts/group-kick.sh` (**D1**): fail-closed, `set -Eeuo pipefail`,
+- `bin/group-kick.sh` (**D1**): fail-closed, `set -Eeuo pipefail`,
   `command -v` de `wacli`/`jq`, `timeout` en las consultas, salida `--json`
   para el agente, códigos de salida distintos por condición incumplida
   (emisor no admin / bot no admin / objetivo no participante / error de
@@ -229,7 +230,7 @@ las skills.
 
 ### Cambio 7: `skills/sticker/` (nuevo)
 
-- `scripts/make-sticker.sh` (**D2**): entrada imagen/vídeo → webp 512×512
+- `bin/make-sticker.sh` (**D2**): entrada imagen/vídeo → webp 512×512
   respetando ≤100 KiB / ≤500 KiB; tmpdir propio + `trap` cleanup; flag
   `--send <JID>` opcional que invoca `wacli send sticker`.
 - `SKILL.md`: triggers (`sticker`, `pegatina`), `requires.bins:
@@ -237,7 +238,7 @@ las skills.
 
 ### Cambio 8: `skills/ytdl/` (nuevo)
 
-- `scripts/ytdl.sh` (**D3**): validación de dominio, formato acotado, tmpdir
+- `bin/ytdl.sh` (**D3**): validación de dominio, formato acotado, tmpdir
   + cleanup, chequeo `MEDIA_MAX_MB`, códigos de salida diferenciados.
 - `SKILL.md`: triggers (`descarga`, `baja`, `youtube`, `audio`), flujo
   script → enviar archivo (media OpenClaw, fallback `wacli send file`) →
@@ -271,7 +272,7 @@ terminadas antes de empezar.
 |----|-------|----------|--------|-----------|--------------------|
 | **T-03** | `Dockerfile` (Cambio 1): `FROM` imagen oficial OpenClaw + `ffmpeg` + `jq` + `yt-dlp` estático + `wacli`, con `ARG` de versiones y sanity check de binarios. | `Dockerfile` | `backend-engineer` | T-02 | `docker build` correcto; `docker run --rm --entrypoint sh <img> -c 'ffmpeg -version && yt-dlp --version && wacli --version && jq --version'` sin errores; versión de `yt-dlp` reciente (no la de bookworm) |
 | **T-04** | `docker-compose.yml` (Cambio 2): servicio `openclaw-gateway` (build, `env_file`, puerto `18789`, volúmenes `openclaw-state`/`wacli-store`, config `ro`, skills) + servicio `openclaw-cli` one-shot con `profiles: [cli]` y TTY. | `docker-compose.yml` | `backend-engineer` | T-02, T-03 | `docker compose config -q` sin errores; `docker compose --profile cli run --rm openclaw-cli openclaw --version` funciona; montajes anidados (estado → config ro/skills) visibles en `docker compose config` |
-| **T-05** | `config/openclaw.json` (Cambio 5): `activation.mode: mention`, DM allowlist `${OWNER_PHONE}`, `groupPolicy/groupAllowFrom`, `mediaMaxMb`, `historyLimit`, identidad + modelo `${LLM_MODEL}` + keys `${LLM_API_KEY}`, `commands.ownerAllowFrom`, política de tools con `requires.bins`. | `config/openclaw.json` | `backend-engineer` | T-02 (claves alineadas con `.env.example`) | `jq empty config/openclaw.json` válido; `grep` confirma **cero** secretos literales; cada `${VAR}` referenciada existe en `.env.example`; claves contrastadas contra `RESEARCH-001` §2/§3/§7/§8 |
+| **T-05** | `conf/openclaw.json` (Cambio 5): `activation.mode: mention`, DM allowlist `${OWNER_PHONE}`, `groupPolicy/groupAllowFrom`, `mediaMaxMb`, `historyLimit`, identidad + modelo `${LLM_MODEL}` + keys `${LLM_API_KEY}`, `commands.ownerAllowFrom`, política de tools con `requires.bins`. | `conf/openclaw.json` | `backend-engineer` | T-02 (claves alineadas con `.env.example`) | `jq empty conf/openclaw.json` válido; `grep` confirma **cero** secretos literales; cada `${VAR}` referenciada existe en `.env.example`; claves contrastadas contra `RESEARCH-001` §2/§3/§7/§8 |
 
 ### Fase 2 — Verificación empírica temprana (2,5 h) — **puertas de bloqueo**
 
@@ -284,11 +285,11 @@ terminadas antes de empezar.
 
 | ID | Tarea | Archivos | Agente | Depende de | Definition of Done |
 |----|-------|----------|--------|-----------|--------------------|
-| **T-08** | `group-kick.sh` fail-closed (**D1**): interfaz `--group <JID> --actor <JID> --target <JID>`; 3 verificaciones previas (`jq` sobre salida de `wacli`); `remove` solo si las 3 pasan; códigos de salida distintos; logging a stderr; salida `--json`. | `skills/group-admin/scripts/group-kick.sh` | `backend-engineer` | **T-07 (roles confirmados)**, T-03 (`jq`) | `shellcheck` limpio; test negativo con fixtures JSON + `wacli` falso en `PATH`: emisor no admin / bot no admin / objetivo no participante / JSON ilegible → **ninguna** llamada a `participants remove` registrada y exit ≠ 0; test positivo → exactamente una llamada |
+| **T-08** | `group-kick.sh` fail-closed (**D1**): interfaz `--group <JID> --actor <JID> --target <JID>`; 3 verificaciones previas (`jq` sobre salida de `wacli`); `remove` solo si las 3 pasan; códigos de salida distintos; logging a stderr; salida `--json`. | `skills/group-admin/bin/group-kick.sh` | `backend-engineer` | **T-07 (roles confirmados)**, T-03 (`jq`) | `shellcheck` limpio; test negativo con fixtures JSON + `wacli` falso en `PATH`: emisor no admin / bot no admin / objetivo no participante / JSON ilegible → **ninguna** llamada a `participants remove` registrada y exit ≠ 0; test positivo → exactamente una llamada |
 | **T-09** | `group-admin/SKILL.md` (**D1**): frontmatter + triggers + `requires.bins: ["wacli","jq"]`; instrucción de pasar **SIEMPRE el JID real del emisor** del mensaje; flujo: script → si error, NO reintentar ni "reformular" el kick. | `skills/group-admin/SKILL.md` | `docs-writer` | T-08 | Frontmatter YAML válido; invocación de ejemplo idéntica a la interfaz real del script; regla fail-closed y anti prompt-injection explícitas |
-| **T-10** | `make-sticker.sh` (**D2**): imagen/vídeo → webp 512×512 (estático scale+pad transparente; animado fps≈12 squeeze), requantización hasta ≤100 KiB / ≤500 KiB, tmpdir + `trap`, flag `--send <JID>`. | `skills/sticker/scripts/make-sticker.sh` | `backend-engineer` | T-03 | `shellcheck` limpio; salida de imagen grande cumple ≤100 KiB (`stat -c%s`); salida de vídeo corto cumple ≤500 KiB y conserva animación; input inválido → error sin basura en tmp |
+| **T-10** | `make-sticker.sh` (**D2**): imagen/vídeo → webp 512×512 (estático scale+pad transparente; animado fps≈12 squeeze), requantización hasta ≤100 KiB / ≤500 KiB, tmpdir + `trap`, flag `--send <JID>`. | `skills/sticker/bin/make-sticker.sh` | `backend-engineer` | T-03 | `shellcheck` limpio; salida de imagen grande cumple ≤100 KiB (`stat -c%s`); salida de vídeo corto cumple ≤500 KiB y conserva animación; input inválido → error sin basura en tmp |
 | **T-11** | `sticker/SKILL.md` (**D2**): triggers, `requires.bins: ["ffmpeg","wacli"]`, flujo crear → comprobar tamaño → `wacli send sticker --to <JID> --file <path>`. | `skills/sticker/SKILL.md` | `docs-writer` | T-10 | Frontmatter válido; límites (100/500 KiB, 512×512) documentados; comandos alineados con `wacli send` |
-| **T-12** | `ytdl.sh` defensiva (**D3**, skill `bash-defensive-patterns`): URL+modo, allowlist de dominios YouTube, `-f 'best[ext=mp4]/best'` / `-x --audio-format mp3` (sin `m3u8`), `--no-playlist`, tmpdir propio + cleanup, chequeo `MEDIA_MAX_MB` antes de enviar, códigos de salida diferenciados. | `skills/ytdl/scripts/ytdl.sh` | `backend-engineer` | T-03, cargar skill `bash-defensive-patterns` | `shellcheck` limpio; dominio no permitido rechazado (p. ej. `evil.com/x`); URL malformada rechazada; archivo > `MEDIA_MAX_MB` → exit específico y **sin** envío; `trap` elimina el tmpdir en éxito y fallo |
+| **T-12** | `ytdl.sh` defensiva (**D3**, skill `bash-defensive-patterns`): URL+modo, allowlist de dominios YouTube, `-f 'best[ext=mp4]/best'` / `-x --audio-format mp3` (sin `m3u8`), `--no-playlist`, tmpdir propio + cleanup, chequeo `MEDIA_MAX_MB` antes de enviar, códigos de salida diferenciados. | `skills/ytdl/bin/ytdl.sh` | `backend-engineer` | T-03, cargar skill `bash-defensive-patterns` | `shellcheck` limpio; dominio no permitido rechazado (p. ej. `evil.com/x`); URL malformada rechazada; archivo > `MEDIA_MAX_MB` → exit específico y **sin** envío; `trap` elimina el tmpdir en éxito y fallo |
 | **T-13** | `ytdl/SKILL.md` (**D3**): triggers, `requires.bins: ["yt-dlp","ffmpeg","wacli"]`, flujo: script → enviar (media OpenClaw, fallback `wacli send file`) → si supera límite, aviso o documento según `MEDIA_FORCE_DOCUMENT`. | `skills/ytdl/SKILL.md` | `docs-writer` | T-12 | Frontmatter válido; dominios permitidos y límite de tamaño documentados; ejemplo de invocación correcta |
 
 ### Fase 4 — Verificación funcional E2E (6 h)
@@ -330,16 +331,16 @@ T-01 → T-02 → T-03 ─┬→ T-04 ─┬→ T-06 → T-07 ──(roles OK)�
 
 | # | Archivo | Cambio | Prioridad |
 |---|---------|--------|-----------|
-| 1 | `skills/group-admin/scripts/group-kick.sh` | Nuevo — kick **fail-closed** con 3 verificaciones previas (D1) | 🔴 Crítico |
-| 2 | `config/openclaw.json` | Nuevo — gating (mención/allowlist), media, LLM parametrizado (D4) | 🔴 Crítico |
+| 1 | `skills/group-admin/bin/group-kick.sh` | Nuevo — kick **fail-closed** con 3 verificaciones previas (D1) | 🔴 Crítico |
+| 2 | `conf/openclaw.json` | Nuevo — gating (mención/allowlist), media, LLM parametrizado (D4) | 🔴 Crítico |
 | 3 | `docker-compose.yml` | Nuevo — gateway + servicio `cli` (profile) + volúmenes/montajes (D5) | 🔴 Crítico |
 | 4 | `Dockerfile` | Nuevo — imagen derivada: `ffmpeg` + `yt-dlp` estático + `wacli` + `jq` | 🔴 Crítico |
 | 5 | `.env.example` | Nuevo — todas las variables (`OWNER_PHONE`, LLM, `MEDIA_MAX_MB`, `GROUP_ALLOW_FROM`…) | 🔴 Crítico |
 | 6 | `.gitignore` | Nuevo — excluye `.env`, volúmenes y artefactos de descarga | 🔴 Crítico |
 | 7 | `skills/group-admin/SKILL.md` | Nuevo — flujo kick + JID real del emisor | 🔴 Crítico |
-| 8 | `skills/sticker/scripts/make-sticker.sh` | Nuevo — webp 512×512 con límites 100/500 KiB (D2) | 🟡 Preventivo |
+| 8 | `skills/sticker/bin/make-sticker.sh` | Nuevo — webp 512×512 con límites 100/500 KiB (D2) | 🟡 Preventivo |
 | 9 | `skills/sticker/SKILL.md` | Nuevo — flujo sticker + envío `wacli send sticker` | 🟡 Preventivo |
-| 10 | `skills/ytdl/scripts/ytdl.sh` | Nuevo — descarga defensiva con allowlist de dominios y `MEDIA_MAX_MB` (D3) | 🟡 Preventivo |
+| 10 | `skills/ytdl/bin/ytdl.sh` | Nuevo — descarga defensiva con allowlist de dominios y `MEDIA_MAX_MB` (D3) | 🟡 Preventivo |
 | 11 | `skills/ytdl/SKILL.md` | Nuevo — flujo ytdl + envío/fallback | 🟡 Preventivo |
 | 12 | `README.md` | Nuevo — uso, arranque, doble QR, comandos | 🟡 Preventivo |
 | 13 | `docs/agents/plans/README.md` | Modificado — fila de este plan en la tabla | 🟡 Preventivo |
@@ -354,7 +355,7 @@ flowchart TD
         DF["Dockerfile<br/>FROM imagen oficial OpenClaw (Debian bookworm)<br/>+ ffmpeg + jq + yt-dlp estatico + wacli"]
         DC["docker-compose.yml"]
         ENV[".env (OWNER_PHONE, LLM_*, MEDIA_MAX_MB,<br/>GROUP_ALLOW_FROM, ...)"]
-        CFG["config/openclaw.json"]
+        CFG["conf/openclaw.json"]
         SK["skills/: group-admin, sticker, ytdl"]
     end
 
@@ -411,7 +412,7 @@ flowchart TD
 
 - [ ] Rama `feature/ISSUE-001-bot-whatsapp-openclaw` creada desde `develop` (T-01).
 - [ ] `.env` fuera de git (`.gitignore` verificado con `git check-ignore`).
-- [ ] `config/openclaw.json` montado **`:ro`** y sin secretos literales.
+- [ ] `conf/openclaw.json` montado **`:ro`** y sin secretos literales.
 - [ ] Gating: `activation.mode: mention` + `dmPolicy: allowlist` con `${OWNER_PHONE}`.
 - [ ] `mediaMaxMb` y `historyLimit` parametrizados en `.env`.
 - [ ] `group-kick.sh` **fail-closed**: `remove` inaccesible sin las 3 verificaciones (test negativo con `wacli` falso).
@@ -433,7 +434,7 @@ flowchart TD
 
 - [ ] `docker compose build` reproducible desde cero (`--no-cache`).
 - [ ] `docker compose --profile cli run --rm openclaw-cli openclaw doctor` sin errores críticos.
-- [ ] `jq empty config/openclaw.json` y `docker compose config -q`.
+- [ ] `jq empty conf/openclaw.json` y `docker compose config -q`.
 - [ ] Sustitución `${VAR}` (incl. arrays) confirmada empíricamente (T-06).
 - [ ] E2E gating: mención/no mención, DM allowlist/no-allowlist (T-14).
 - [ ] E2E kick: 5 casos fail-closed (T-15), incl. intento de prompt-injection.

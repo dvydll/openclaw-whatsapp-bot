@@ -64,13 +64,13 @@ Ejemplo oficial ([OpenRouter](https://docs.openclaw.ai/providers/openrouter)):
 }
 ```
 
-Aplicado a este repo (hoy `config/openclaw.json` inyecta solo
+Aplicado a este repo (hoy `conf/openclaw.json` inyecta solo
 `OPENAI_API_KEY`/`ANTHROPIC_API_KEY` desde `${LLM_API_KEY}`):
 
 - Opción A (recomendada, sin tocar config): definir `OPENROUTER_API_KEY=sk-or-...`
   en `.env` → el `env_file` del `docker-compose.yml` lo expone al contenedor y
   OpenClaw lo toma como auth del proveedor.
-- Opción B: añadir en el bloque `env.vars` de `config/openclaw.json`:
+- Opción B: añadir en el bloque `env.vars` de `conf/openclaw.json`:
   `"OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"`.
 
 ### 1.3 Tool-calling en OpenRouter desde OpenClaw
@@ -276,7 +276,7 @@ services:
 ```
 
 ```json5
-// config/openclaw.json
+// conf/openclaw.json
 "baseUrl": "http://host.docker.internal:11434"
 ```
 
@@ -429,7 +429,7 @@ Ejemplo híbrido oficial (hosted primary + local fallback)
 
 ### 5.3 ⚠️ Atención con `agents.entries.bot.model` (la config ACTUAL del repo)
 
-`config/openclaw.json` hoy fija `"model": "${LLM_MODEL}"` (forma string) en
+`conf/openclaw.json` hoy fija `"model": "${LLM_MODEL}"` (forma string) en
 `agents.entries.bot.model`. Según [Model failover](https://docs.openclaw.ai/concepts/model-failover):
 
 > "Native agent primary: `agents.entries.*.model` is **strict unless that
@@ -513,7 +513,7 @@ el bot vivo tras agotar la cuota.
    además escribe `agents.defaults.model.fallbacks` (defaults), mientras el bot
    usa `agents.entries.bot.model` → habrá que reflejar la cadena en la entry (§5.3).
 3. **Sustitución `${LLM_MODEL}` dentro de un objeto** `model: {primary, fallbacks}`
-   en `config/openclaw.json` no está confirmada en la doc (el repo ya sufrió
+   en `conf/openclaw.json` no está confirmada en la doc (el repo ya sufrió
    excepciones de sustitución en campos `integer`). Validar con `openclaw config validate`.
 4. **Pass-through de OpenRouter `models[]`** (fallback upstream) vía
    `agents.defaults.models[...].params.extraBody` es una **hipótesis** de

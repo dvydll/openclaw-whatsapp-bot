@@ -327,7 +327,7 @@ default**.
 
 ### 6.1 Opción A (RECOMENDADA): híbrida — Ollama Cloud primary + Ollama local fallback
 
-Modificaciones exactas sobre `config/openclaw.json` (JSON puro, copiable):
+Modificaciones exactas sobre `conf/openclaw.json` (JSON puro, copiable):
 
 **(1) Añadir bloque `models.providers`** (solo el provider local; `ollama-cloud`
 NO lleva entrada — es plugin oficial con descubrimiento en vivo):
