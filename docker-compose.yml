@@ -1,0 +1,104 @@
+# ══════════════════════════════════════════════════════════════════════
+# openclaw-whatsapp-bot — despliegue con Docker Compose
+#
+# PLAN-001 "Cambio 2" · Decisiones D5 (orden de montajes anidados)
+#
+# Servicios:
+#   - openclaw-gateway: gateway a largo plazo (:18789).
+#   - ollama:           Ollama local (fallback LLM), perfil "local-llm",
+#                       OFF por defecto; ver comentario sobre el servicio.
+#   - openclaw-cli:     one-shot con profile "cli" para operaciones
+#                       manuales (doble QR HITL, doctor, plugins, wacli):
+#     docker compose --profile cli run --rm openclaw-cli openclaw --version
+#     docker compose --profile cli run --rm openclaw-cli openclaw channels login --channel whatsapp
+#     docker compose --profile cli run --rm openclaw-cli openclaw doctor
+#     docker compose --profile cli run --rm openclaw-cli openclaw plugins install @openclaw/whatsapp
+#     docker compose --profile cli run --rm openclaw-cli wacli auth
+#
+# Nota: el healthcheck lo hereda la imagen base (HEALTHCHECK oficial con
+# dist/docker-healthcheck.js + /healthz); no se declara aquí a propósito
+# (subcomando a confirmar en T-06).
+#═══════════════════════════════════════════════════════════════════════
+
+services:
+  openclaw-gateway:
+    build: .
+    # Misma imagen para ambos servicios (el cli referencia esta tag).
+    image: openclaw-whatsapp-bot:local
+    env_file:
+      - .env
+    environment:
+      OPENCLAW_STATE_DIR: /home/node/.openclaw
+      OPENCLAW_CONFIG_PATH: /home/node/.openclaw/openclaw.json
+      # wacli usa ~/.local/state/wacli por defecto en Linux; se fija su store
+      # al volumen wacli-store para persistir la 2ª sesión vinculada (D5).
+      # (Clave documentada en la README de openclaw/wacli: WACLI_STORE_DIR.)
+      WACLI_STORE_DIR: /home/node/.wacli
+    ports:
+      - "18789:18789"
+    volumes:
+      # D5: volumen de estado PRIMERO; los montajes individuales van ENCIMA.
+      - openclaw-state:/home/node/.openclaw
+      - wacli-store:/home/node/.wacli
+      - ./conf/openclaw.json:/home/node/.openclaw/openclaw.json:ro
+      - ./skills:/home/node/.openclaw/skills:${SKILLS_MOUNT_MODE:-rw}
+    restart: unless-stopped
+
+  openclaw-cli:
+    # Misma imagen, volúmenes y montajes que el gateway (one-shot, profile cli).
+    image: openclaw-whatsapp-bot:local
+    env_file:
+      - .env
+    environment:
+      OPENCLAW_STATE_DIR: /home/node/.openclaw
+      OPENCLAW_CONFIG_PATH: /home/node/.openclaw/openclaw.json
+      WACLI_STORE_DIR: /home/node/.wacli
+    volumes:
+      - openclaw-state:/home/node/.openclaw
+      - wacli-store:/home/node/.wacli
+      - ./conf/openclaw.json:/home/node/.openclaw/openclaw.json:ro
+      - ./skills:/home/node/.openclaw/skills:${SKILLS_MOUNT_MODE:-rw}
+    profiles:
+      - cli
+    tty: true
+    stdin_open: true
+
+  # ── Ollama local (fallback LLM) ───────────────────────────────────────
+  # Servicio OFF por defecto: solo arranca con el perfil "local-llm".
+  # Estrategia LLM (RESEARCH-003/004): primario Ollama Cloud (plugin
+  # ollama-cloud) + fallback local este servicio (agents.entries.bot.model).
+  # El gateway lo alcanza por la red interna del compose como
+  # http://ollama:11434 (OLLAMA_BASE_URL en .env); SIN puertos publicados
+  # al host. Tag fijado: última stable de ollama/ollama a 2026-10-15
+  # (fuente: hub.docker.com/r/ollama/ollama/tags · docs.ollama.com/docker).
+  ollama:
+    image: ollama/ollama:0.40.5
+    volumes:
+      - ollama-models:/root/.ollama
+    profiles:
+      - local-llm
+    restart: unless-stopped
+    # ── GPU (opcional, requiere nvidia-container-toolkit) ─────────────────
+    # Descomentar UNA de las dos formas (equivalentes en compose v2):
+    #   gpus: all
+    #   deploy:
+    #     resources:
+    #       reservations:
+    #         devices:
+    #           - driver: nvidia
+    #             count: all
+    #             capabilities: [gpu]
+    #
+    # ── Arranque y pull del modelo local (~5 GB de descarga) ──────────────
+    # El pull lo decide el HUMANO (no automático; consume GBs):
+    #   docker compose --profile local-llm up -d ollama
+    #   docker compose exec ollama ollama pull qwen3:8b
+
+# Estado del plugin/sesión Baileys y store de la 2ª sesión de wacli,
+# separados para no mezclar los locks de store de wacli con el estado de
+# OpenClaw (D5).
+volumes:
+  openclaw-state:
+  wacli-store:
+  # Modelos del Ollama local (fallback) — descarga persistente (~5 GB qwen3:8b).
+  ollama-models:

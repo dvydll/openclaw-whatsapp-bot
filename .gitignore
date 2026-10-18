@@ -1,0 +1,33 @@
+# ── Entorno local (nunca se commitea; .env.example SÍ se versiona) ──
+.env
+
+# ── Estado / volúmenes de despliegue ──
+state/
+.openclaw/
+.wacli/
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ── Artefactos de descarga (skills ytdl / sticker) ──
+downloads/
+*.mp4
+*.mp3
+*.webp
+*.webm
+*.opus
+*.mkv
+
+# ── Logs ──
+*.log
+logs/
+
+# ── Temporales ──
+*.tmp
+*.temp
+tmp/
+.cache/
+.DS_Store

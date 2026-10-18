@@ -1,0 +1,214 @@
+{
+  "gateway": {
+    "mode": "local",
+    "bind": "lan",
+    "auth": {
+      "mode": "token",
+      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "dmPolicy": "allowlist",
+      "allowFrom": [
+        "${OWNER_PHONE}"
+      ],
+      "groupPolicy": "allowlist",
+      "groupAllowFrom": [
+        "${GROUP_ALLOW_FROM}"
+      ],
+      "groups": {
+        "*": {
+          "requireMention": true
+        }
+      },
+      "mediaMaxMb": 50,
+      "historyLimit": 50
+    }
+  },
+  "commands": {
+    "ownerAllowFrom": [
+      "${OWNER_PHONE}"
+    ]
+  },
+  "agents": {
+    "entries": {
+      "bot": {
+        "name": "Bot",
+        "identity": {
+          "name": "Bot",
+          "emoji": "🤖",
+          "theme": "asistente util y amable, respuestas breves y claras en español"
+        },
+        "model": {
+          "primary": "${LLM_MODEL}",
+          "fallbacks": [
+            "ollama/qwen3:8b"
+          ]
+        },
+        "groupChat": {
+          "unmentionedInbound": "room_event"
+        }
+      }
+    }
+  },
+  "models": {
+    "providers": {
+      "ollama": {
+        "baseUrl": "${OLLAMA_BASE_URL}",
+        "apiKey": "ollama-local",
+        "api": "ollama",
+        "timeoutSeconds": 300,
+        "models": [
+          {
+            "id": "qwen3:8b",
+            "name": "qwen3:8b",
+            "input": [
+              "text"
+            ],
+            "contextTokens": 32768,
+            "params": {
+              "num_ctx": 32768,
+              "keep_alive": "15m"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "whatsapp": {
+        "enabled": true
+      },
+      "ollama": {
+        "enabled": true
+      }
+    }
+  },
+  "tools": {
+    "profile": "messaging",
+    "alsoAllow": [
+      "exec",
+      "skill_workshop",
+      "group:fs"
+    ]
+  },
+  "env": {
+    "vars": {
+      "OPENAI_API_KEY": "${LLM_API_KEY}",
+      "ANTHROPIC_API_KEY": "${LLM_API_KEY}"
+    }
+  },
+  "meta": {
+    "migrations": {
+      "webhookListeners": true,
+      "modelPolicyAllowlist": true,
+      "utilityModelSeparation": true
+    },
+    "lastTouchedVersion": "2026.10.3"
+  },
+  "wizard": {
+    "lastRunAt": "2026-10-15T16:19:56.748Z",
+    "lastRunVersion": "2026.10.3",
+    "lastRunCommand": "doctor",
+    "lastRunMode": "local"
+  },
+  "skills": {
+    "entries": {
+      "1password": {
+        "enabled": false
+      },
+      "blogwatcher": {
+        "enabled": false
+      },
+      "blucli": {
+        "enabled": false
+      },
+      "camsnap": {
+        "enabled": false
+      },
+      "coding-agent": {
+        "enabled": false
+      },
+      "eightctl": {
+        "enabled": false
+      },
+      "gemini": {
+        "enabled": false
+      },
+      "gh-issues": {
+        "enabled": false
+      },
+      "gifgrep": {
+        "enabled": false
+      },
+      "github": {
+        "enabled": false
+      },
+      "gog": {
+        "enabled": false
+      },
+      "goplaces": {
+        "enabled": false
+      },
+      "himalaya": {
+        "enabled": false
+      },
+      "mcporter": {
+        "enabled": false
+      },
+      "model-usage": {
+        "enabled": false
+      },
+      "nano-pdf": {
+        "enabled": false
+      },
+      "obsidian": {
+        "enabled": false
+      },
+      "openai-whisper": {
+        "enabled": false
+      },
+      "openai-whisper-api": {
+        "enabled": false
+      },
+      "openhue": {
+        "enabled": false
+      },
+      "oracle": {
+        "enabled": false
+      },
+      "ordercli": {
+        "enabled": false
+      },
+      "sag": {
+        "enabled": false
+      },
+      "sherpa-onnx-tts": {
+        "enabled": false
+      },
+      "songsee": {
+        "enabled": false
+      },
+      "sonoscli": {
+        "enabled": false
+      },
+      "spotify-player": {
+        "enabled": false
+      },
+      "summarize": {
+        "enabled": false
+      },
+      "tmux": {
+        "enabled": false
+      },
+      "trello": {
+        "enabled": false
+      },
+      "xurl": {
+        "enabled": false
+      }
+    }
+  }
+}
