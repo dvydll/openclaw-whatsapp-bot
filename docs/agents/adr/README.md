@@ -1,13 +1,13 @@
 # ADRs — Architecture Decision Records
 
 Este directorio contiene los Architecture Decision Records (ADRs) del proyecto
-FSFA-UGT.
+`openclaw-whatsapp-bot`.
 
-## ADRs de FSFA-UGT
+## ADRs de openclaw-whatsapp-bot
 
 | #   | Título | Estado | Fecha |
 | --- | ------ | ------ | ----- |
-| 001 | [[ADR-001-mecanismos-capacidades-no-nativas.md\|Mecanismos para capacidades no nativas de OpenClaw (kick, roles admin, stickers, multimedia)]] | Propuesto | 2026-10-15 |
+| 001 | [[ADR-001-mecanismos-capacidades-no-nativas.md\|Mecanismos para capacidades no nativas de OpenClaw (kick, roles admin, stickers, multimedia)]] | Aceptado (GATE 1b) | 2026-10-15 |
 
 ## Plantilla
 

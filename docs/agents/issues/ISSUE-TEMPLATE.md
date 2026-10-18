@@ -1,6 +1,6 @@
 # Plantilla de Issue
 
-Copia este archivo a `docs/issues/` con el nombre `ISSUE-<numero>-<descripcion-corta>.md`.
+Copia este archivo a `docs/agents/issues/` con el nombre `ISSUE-<numero>-<descripcion-corta>.md`.
 
 ---
 

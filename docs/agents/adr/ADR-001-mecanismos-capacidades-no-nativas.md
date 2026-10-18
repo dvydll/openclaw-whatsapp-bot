@@ -288,6 +288,24 @@ mantener un sidecar de red separado.
   — probabilidad **no confirmada**; mitigación operativa: rate-limit de envíos
   (wacli avisa si se repiten envíos en <5 s), evitar bulk, número dedicado, y
   modo read-only (`WACLI_READONLY=1`) donde no se necesite mutación.
+- **Radio de impacto (*blast radius*) de un baneo: la cuenta completa.** WhatsApp
+  Multi-Device implica que este bot es **una sola cuenta con dos dispositivos
+  vinculados** (la sesión Baileys del plugin en `~/.openclaw` + la sesión de
+  `wacli` en `~/.wacli`), **no dos cuentas independientes**. Por tanto, un baneo o
+  bloqueo a **nivel de cuenta** —el escenario que reporta whatsmeow #810, que
+  afecta a whatsmeow **y Baileys**— **tumba las dos sesiones a la vez**: la sesión
+  Baileys del plugin **y** `wacli` caen simultáneamente y el bot queda inoperativo
+  por completo, arrastrando consigo las capacidades no nativas (kick, stickers,
+  descargas). No hay aislamiento entre ambas sesiones: es un **único radio de
+  impacto que cubre todo el bot**, no un riesgo por componente.
+- **Consecuencia operativa: hay que vigilar las dos sesiones.** Al compartir
+  cuenta, el seguimiento debe comprobar **ambas** sesiones (la del plugin y la de
+  `wacli`), porque sus fallos no son equivalentes: una **caída de `wacli`** degrada
+  de forma **silenciosa** (el bot sigue respondiendo, pero las skills que dependen
+  de él fallan y el kick falla *cerrado*, esto es, no expulsa); una **caída de la
+  sesión Baileys del plugin** deja al bot **totalmente mudo**. Ninguno de los dos
+  fallos es evidente desde el exterior sin comprobarlo, así que la vigilancia de
+  ambas sesiones es explícita y no opcional.
 - La verificación de admin (requisito de seguridad del kick) **pendiente de
   verificación empírica** del campo de rol en la salida JSON de wacli; no se
   debe desplegar el kick sin confirmarlo.

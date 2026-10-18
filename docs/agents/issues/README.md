@@ -1,8 +1,7 @@
 # Registro de Issues
 
-Este directorio contiene el registro de errores y problemas reportados durante
-la operación del proyecto FSFA-UGT (Formación Sanitaria para la Fundación Salud
-y Formación de Andalucía).
+Este directorio contiene el registro de incidencias y solicitudes de cambio del
+proyecto `openclaw-whatsapp-bot` (bot de WhatsApp autoalojado sobre OpenClaw).
 
 ## Cómo Reportar un Issue
 
@@ -34,7 +33,7 @@ ISSUE-003-error-seguimiento-npe.md
 
 | Prioridad | Criterio                                                     |
 | --------- | ------------------------------------------------------------ |
-| **Alta**  | Bloquea funcionalidad principal (login, matriculación, pago) |
+| **Alta**  | Bloquea funcionalidad principal del bot (canal WhatsApp, kick, despliegue) |
 | **Media** | Funcionalidad afectada pero con workaround                   |
 | **Baja**  | Cosmético o mejora menor                                     |
 
@@ -42,8 +41,8 @@ ISSUE-003-error-seguimiento-npe.md
 
 | ID  | Descripción | Estado | Fecha |
 | --- | ----------- | ------ | ----- |
-| ISSUE-001 | Bot de WhatsApp con OpenClaw (docker) | Nuevo | 2026-10-15 |
+| ISSUE-001 | Bot de WhatsApp con OpenClaw (docker) | En progreso | 2026-10-15 |
 
 ---
 
-*Última actualización: 2026-10-09*
+*Última actualización: 2026-10-18*

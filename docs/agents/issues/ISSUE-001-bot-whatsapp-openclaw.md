@@ -8,7 +8,7 @@
 | **Fecha**         | 2026-10-15                                                  |
 | **Reportado por** | Propietario del proyecto                                    |
 | **Prioridad**     | Alta                                                        |
-| **Estado**        | Nuevo                                                       |
+| **Estado**        | En progreso                                                 |
 | **Entorno**       | Ambos                                                       |
 
 ## Descripción
@@ -58,7 +58,12 @@ OpenClaw y desplegado con Docker, con las siguientes capacidades:
 
 ## Comportamiento Actual
 
-NO APLICA — proyecto nuevo; aún no existe implementación.
+Implementación **parcial** en curso (rama `feature/ISSUE-001-bot-whatsapp-openclaw`):
+ya existen la imagen Docker derivada, `docker-compose.yml`, `conf/openclaw.json`
+y las tres skills (`group-admin`, `sticker`, `ytdl`). Falta la **verificación
+empírica** del canal y de los roles admin (`PLAN-001` T-06/T-07) y las pruebas
+**E2E** (T-14…T-17), bloqueadas a la espera de un número de teléfono dedicado; el
+kick permanece inertado por diseño (*fail-closed*).
 
 ## Evidencia
 
@@ -91,8 +96,9 @@ durante la investigación si procede.
 
 ## Solución Propuesta
 
-*(Completar durante la investigación/plan: arquitectura del bot, estructura de
-directorios, servicios Docker, definición de comandos y allowlist en `.env`.)*
+*(Completada durante la investigación/planificación: ver `ADR-001` (decisión,
+imagen Docker derivada + wacli + skills propias) y `PLAN-001` (aprobado en
+GATE 2), y la investigación `RESEARCH-002`.)*
 
 ## Resolución
 

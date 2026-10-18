@@ -1,7 +1,7 @@
 ---
 title: "Plan: Bot de WhatsApp con OpenClaw desplegado con Docker (ISSUE-001)"
 description: "Desglose de implementación del bot de WhatsApp basado en OpenClaw: imagen Docker derivada (ffmpeg + yt-dlp + wacli), config parametrizada, skills group-admin/sticker/ytdl con verificación empírica previa, y despliegue con docker-compose."
-summary: "Feature nueva desde cero. 20 tareas en 6 fases (~27 h): rama GitFlow, Dockerfile/compose/.env/openclaw.json, verificación empírica bloqueante de roles admin en wacli, 3 skills (kick fail-closed, stickers, yt-dlp), verificación E2E y documentación. Estado: Borrador (pendiente GATE 2)."
+summary: "Feature nueva desde cero. 20 tareas en 6 fases (~27 h): rama GitFlow, Dockerfile/compose/.env/openclaw.json, verificación empírica bloqueante de roles admin en wacli, 3 skills (kick fail-closed, stickers, yt-dlp), verificación E2E y documentación. Estado: Aprobado (GATE 2, 2026-10-15)."
 createdAt: "2026-10-15T17:30:00Z"
 tags: ["openclaw", "whatsapp", "docker", "wacli", "skills", "plan", "ISSUE-001"]
 author: "Agente planificador (task-decomposer)"
@@ -25,7 +25,7 @@ metadata:
 ---
 
 **Estado del plan**: **Aprobado (GATE 2, 2026-10-15)**
-**Desviaciones de ejecución**: 2026-10-16 — directorio de ejecutables de las skills renombrado `scripts/` → `bin/` (preferencia del propietario; sin impacto: OpenClaw no impone el nombre del subdirectorio) — resto de desviaciones (T-05b/T-05c, D4) a registrar en GATE 3. 2026-10-18 — por decisión del propietario se ejecutan **T-08/T-09/T-11/T-13 antes de T-07** (key Ollama Cloud, QR de wacli y batería de pruebas E2E quedan pospuestos para el final): el kick queda inertado por diseño (fail-closed: exit 21 sin roles confirmados / `BOT_JID` ausente), sin efecto hasta la verificación empírica.
+**Desviaciones de ejecución**: 2026-10-16 — directorio de ejecutables de las skills renombrado `scripts/` → `bin/` (preferencia del propietario; sin impacto: OpenClaw no impone el nombre del subdirectorio) — resto de desviaciones (T-05b/T-05c, D4) a registrar en GATE 3. 2026-10-18 — por decisión del propietario se ejecutan **T-08/T-09/T-11/T-13 antes de T-07** (key Ollama Cloud, QR de wacli y batería de pruebas E2E quedan pospuestos para el final): el kick queda inertado por diseño (fail-closed: exit 21 sin roles confirmados / `BOT_JID` ausente), sin efecto hasta la verificación empírica. 2026-10-18 — **T-18 (README raíz) sigue EN PROGRESO (abierto)**: el `README.md` de la raíz **ya está redactado** (uso, doble QR, comandos y troubleshooting), pero sus comandos **NO se han validado contra un despliegue real**; la DoD de T-18 («comandos probados tal cual se documentan») exige esa verificación, que está **bloqueada** a la espera de un número de teléfono dedicado y de las tareas E2E **T-14…T-17**, por lo que T-18 **no se considera completado**. Documentación ordenada y riesgo de radio de impacto (*blast radius*) documentado en `ADR-001` (una sola cuenta con dos dispositivos vinculados: un baneo de la cuenta tumba a la vez la sesión Baileys del plugin y la de `wacli`). **T-06, T-07 y E2E (T-14…T-17) siguen BLOQUEADAS** a la espera de un número de teléfono dedicado.
 **Ref. Issue**: `ISSUE-001` · **ADR base**: `ADR-001` (aceptado, GATE 1b) · **Investigación**: `RESEARCH-001`, `RESEARCH-002`
 
 ## Contexto
@@ -427,7 +427,7 @@ flowchart TD
 - [ ] `ytdl.sh`: allowlist de dominios, `--no-playlist`, tmpdir propio con `trap` de limpieza, `shellcheck` limpio en los 3 scripts.
 - [ ] Chequeo de tamaño vs `MEDIA_MAX_MB` **antes** de cualquier envío.
 - [ ] Volumen `~/.wacli` separado del estado de OpenClaw (locks de store intactos).
-- [ ] README documenta el **doble QR**, el riesgo del 2º dispositivo vinculado y el rate-limit de envíos.
+- [ ] README documenta el **doble QR**, el riesgo del 2º dispositivo vinculado y el rate-limit de envíos. **(T-18 EN PROGRESO, 2026-10-18: `README.md` redactado, pero sus comandos NO se han validado contra un despliegue real; pendiente de T-14…T-17 y de un número de teléfono dedicado).**
 - [ ] `BOT_JID` (o comando de identidad de wacli) fijado tras T-07 y comentado en `.env.example`.
 
 ### Verificación
@@ -474,4 +474,4 @@ que añadiría ~2-4 h).*
 
 ---
 
-*Plan creado: 2026-10-15 — **Estado: Borrador (pendiente GATE 2)***
+*Plan creado: 2026-10-15 — **Estado: Aprobado (GATE 2, 2026-10-15)***
